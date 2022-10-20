@@ -314,6 +314,8 @@ The reader:
       - MUST return an error if the payload contains other tlv fields than `encrypted_recipient_data`, `current_blinding_point`, `amt_to_forward`, `outgoing_cltv_value` and `total_amount_msat`.
       - MUST return an error if `amt_to_forward` or `outgoing_cltv_value` are not present.
       - MUST return an error if `amt_to_forward` is below what it expects for the payment.
+      - MUST return an error if incoming `cltv_expiry` < `outgoing_cltv_value`.
+      - MUST return an error if incoming `cltv_expiry` < `current_block_height` + `min_final_cltv_expiry_delta`.
   - Otherwise (it is not part of a blinded route):
     - MUST return an error if `amt_to_forward` or `outgoing_cltv_value` are not present.
     - if it is not the final node:
