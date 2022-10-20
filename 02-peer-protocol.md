@@ -1157,7 +1157,13 @@ A receiving node:
   - if the `sha256_of_onion` in `update_fail_malformed_htlc` doesn't match the
   onion it sent:
     - MAY retry or choose an alternate error response.
-  - otherwise, a receiving node which has an outgoing HTLC canceled by `update_fail_malformed_htlc`:
+  - a receiving node which has an outgoing HTLC canceled by `update_fail_htlc`:
+    - if `current_blinding_point` is set in the onion payload of the corresponding incoming HTLC:
+      - MUST return an `update_fail_malformed_htlc` error using the
+        `invalid_onion_blinding` failure code, with the `sha256_of_onion`
+        of the onion it received.
+      - SHOULD add a random delay before sending `update_fail_malformed_htlc`.
+  - a receiving node which has an outgoing HTLC canceled by `update_fail_malformed_htlc`:
     - if it is part of a blinded route:
       - MUST return an `update_fail_malformed_htlc` error using the
         `invalid_onion_blinding` failure code, with the `sha256_of_onion`
@@ -1187,10 +1193,8 @@ errors. However, without re-checking the actual encrypted packet sent,
 it won't know whether the error was its own or the remote's; so
 such detection is left as an option.
 
-Intermediate nodes inside a blinded route must use `update_fail_malformed_htlc`
-to avoid leaking information to senders trying to probe the blinded route. The
-final recipient however may use `update_fail_htlc` to help senders retry failed
-payments.
+Nodes inside a blinded route must use `update_fail_malformed_htlc` to avoid
+leaking information to senders trying to probe the blinded route.
 
 ### Committing Updates So Far: `commitment_signed`
 

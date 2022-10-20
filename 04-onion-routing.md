@@ -581,11 +581,6 @@ set `payment_constraints.max_cltv_expiry` to restrict the lifetime of a blinded
 route and reduce the risk that an intermediate node updates its fees and rejects
 payments (which could be used to unblind nodes inside the route).
 
-When route blinding is used for payments, intermediate nodes inside the blinded
-route must not return standard onion errors, because they would provide
-information to the sender that could help them unblind the identity of the
-blinded nodes.
-
 # Accepting and Forwarding a Payment
 
 Once a node has decoded the payload it either accepts the payment locally, or forwards it to the peer indicated as the next hop in the payload.
@@ -1032,10 +1027,9 @@ channel.
 
 Error handling for HTLCs with `blinding_point` is particularly fraught,
 since differences in implementations (or versions) may be leveraged to
-de-anonymize elements of the blinded path. Thus the decision to allow
-only errors from the final node to propagate, and turn every other error
-into `invalid_onion_blinding` which will be converted to a normal onion
-error by the introduction point.
+de-anonymize elements of the blinded path. Thus the decision turn every
+error into `invalid_onion_blinding` which will be converted to a normal
+onion error by the introduction point.
 
 ### Requirements
 
@@ -1044,12 +1038,7 @@ The _erring node_:
     - Note: this value is 118 bytes longer than the longest currently-defined
     message.
   - If `blinding_point` is set in the incoming `update_add_htlc`:
-    - if it is not the final node (including if the `onion_routing_packet` is malformed):
-	    - SHOULD forward normal downstream `update_fail_htlc` errors (which the final node may send).
-      - MUST return `invalid_onion_blinding` for any local error or other downstream errors.
-    - otherwise (it is the final node):
-      - MAY return normal errors that help senders retry the payment (e.g. `mpp_timeout`).
-      - SHOULD return `invalid_onion_blinding` for all other errors.
+    - MUST return `invalid_onion_blinding` for any local error or other downstream errors.
 
 The _origin node_:
   - once the return message has been decrypted:
