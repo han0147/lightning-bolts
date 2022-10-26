@@ -263,8 +263,7 @@ The writer of `tlv_payload`:
     - For the first node in the blinded route:
       - MUST include the `blinding_point` provided by the recipient in `current_blinding_point`
     - If it is the final node:
-      - MUST include `amt_to_forward` and `outgoing_cltv_value`.
-      - MUST include `total_amount_msat` when using `basic_mpp`.
+      - MUST include `amt_to_forward`, `outgoing_cltv_value` and `total_amount_msat`.
     - MUST NOT include any other tlv field.
   - For every node outside of a blinded route:
     - MUST include `amt_to_forward` and `outgoing_cltv_value`.
@@ -312,11 +311,12 @@ The reader:
         - `outgoing_cltv_value = cltv_expiry - payment_relay.cltv_expiry_delta`
     - If it is the final node:
       - MUST return an error if the payload contains other tlv fields than `encrypted_recipient_data`, `current_blinding_point`, `amt_to_forward`, `outgoing_cltv_value` and `total_amount_msat`.
-      - MUST return an error if `amt_to_forward` or `outgoing_cltv_value` are not present.
+      - MUST return an error if `amt_to_forward`, `outgoing_cltv_value` or `total_amount_msat` are not present.
       - MUST return an error if `amt_to_forward` is below what it expects for the payment.
       - MUST return an error if incoming `cltv_expiry` < `outgoing_cltv_value`.
       - MUST return an error if incoming `cltv_expiry` < `current_block_height` + `min_final_cltv_expiry_delta`.
   - Otherwise (it is not part of a blinded route):
+    - MUST return an error if `blinding_point` is set in the incoming `update_add_htlc` or `current_blinding_point` is present.
     - MUST return an error if `amt_to_forward` or `outgoing_cltv_value` are not present.
     - if it is not the final node:
       - MUST return an error if:
@@ -1037,8 +1037,10 @@ The _erring node_:
   - SHOULD set `pad` such that the `failure_len` plus `pad_len` is equal to 256.
     - Note: this value is 118 bytes longer than the longest currently-defined
     message.
-  - If `blinding_point` is set in the incoming `update_add_htlc`:
-    - MUST return `invalid_onion_blinding` for any local error or other downstream errors.
+  - If `blinding_point` is set in the incoming `update_add_htlc` or
+    `current_blinding_point` is set in the onion payload:
+    - MUST return `invalid_onion_blinding` for any local error or other
+      downstream errors.
 
 The _origin node_:
   - once the return message has been decrypted:
