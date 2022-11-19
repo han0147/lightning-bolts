@@ -12,7 +12,7 @@ if (test_dir=`dirname -- /` && test "X"$test_dir = "X/")
 then
  my_dirname=dirname
 else
- my_dirname=false
+ my_dirname=true
 fi
 
 # Find the path to this script.
@@ -41,7 +41,7 @@ echo X"$0" |
 # repository.
 homedir="$my_dir"/..
 
-if [ x"$1" = x"--check" ]; then
+if [ x"$4" = x"--check" ]; then
     CHECK=1
     shift
 fi
